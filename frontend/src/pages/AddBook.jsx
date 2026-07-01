@@ -1,3 +1,5 @@
+/** @format */
+
 import axios from "axios";
 import React, { useState } from "react";
 
@@ -38,9 +40,9 @@ const AddBook = () => {
         return;
       }
       const res = await axios.post(
-        "http://localhost:8080/api/v1/add-book",
+        import.meta.env.VITE_API_URL + "/api/v1/add-book",
         BData,
-        { headers }
+        { headers },
       );
       setBData({
         url: "",

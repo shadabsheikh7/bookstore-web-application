@@ -1,3 +1,5 @@
+/** @format */
+
 import React from "react";
 import { Link } from "react-router-dom";
 import Favourite from "../Profile/Favourite";
@@ -12,9 +14,9 @@ const Bookcard = ({ dataprops, favourite }) => {
 
   const handleremovebook = async () => {
     const res = await axios.put(
-      "http://localhost:8080/api/v1/rem-from-fav",
+      import.meta.env.VITE_API_URL + "/api/v1/rem-from-fav",
       {},
-      { headers }
+      { headers },
     );
     alert(res.data.message);
   };

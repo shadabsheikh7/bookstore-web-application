@@ -26,7 +26,7 @@ const UpdateBook = () => {
     const fetchbookdata = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8080/api/v1/get-book-by-id/${id}`,
+          `process.env.API_URL/api/v1/get-book-by-id/${id}`,
         );
         setBData(res.data.data);
       } catch (error) {
@@ -56,7 +56,7 @@ const UpdateBook = () => {
         return;
       }
       const res = await axios.post(
-        "http://localhost:8080/api/v1/update-book",
+        import.meta.env.VITE_API_URL + "/api/v1/update-book",
         BData,
         { headers },
       );

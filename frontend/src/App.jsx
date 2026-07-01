@@ -1,3 +1,5 @@
+/** @format */
+
 import React, { useEffect } from "react";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar/Navbar";

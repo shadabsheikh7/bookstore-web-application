@@ -1,3 +1,5 @@
+/** @format */
+
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FaUser } from "react-icons/fa";
@@ -16,8 +18,10 @@ const Allorders = () => {
   useEffect(() => {
     const fetchorderdata = async () => {
       const res = await axios.get(
-        "http://localhost:8080/api/v1/get-all-order",
-        { headers }
+        import.meta.env.VITE_API_URL + "/api/v1/get-all-order",
+        {
+          headers,
+        },
       );
       console.log("response of the order", res.data.data);
       setorderdata(res.data.data);

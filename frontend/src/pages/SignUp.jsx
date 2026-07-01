@@ -47,7 +47,7 @@ const SignUp = () => {
       }
 
       const res = await axios.post(
-        "http://localhost:8080/api/v1/sign-up",
+        import.meta.env.VITE_API_URL + "/api/v1/sign-up",
         data,
       );
       alert(res.data.message);

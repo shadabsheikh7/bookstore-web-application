@@ -1,3 +1,5 @@
+/** @format */
+
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
@@ -18,7 +20,7 @@ const Settings = () => {
   //     const fetch = async () => {
   //       try {
   //         const res = await axios.get(
-  //           "http://localhost:8080/api/v1/user-details",
+  //           process.env.API_URL+"/api/v1/user-details",
   //           { headers }
   //         );
   //         setuserData(res.data);
@@ -38,7 +40,7 @@ const Settings = () => {
   useEffect(() => {
     const fetch = async () => {
       axios
-        .get("http://localhost:8080/api/v1/user-details", { headers })
+        .get(import.meta.env.VITE_API_URL + "/api/v1/user-details", { headers })
         .then((res) => {
           setuserData(res.data);
           setAddress({ address: res.data.address });
@@ -60,9 +62,9 @@ const Settings = () => {
   const submitaddress = async () => {
     try {
       const response = await axios.put(
-        "http://localhost:8080/api/v1/update-address",
+        import.meta.env.VITE_API_URL + "/api/v1/update-address",
         address,
-        { headers }
+        { headers },
       );
       console.log(response);
       alert(response.data.message);
