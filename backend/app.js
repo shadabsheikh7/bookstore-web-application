@@ -2,23 +2,23 @@
 
 import dotenv from "dotenv";
 dotenv.config();
-import connection from "./conn/db.js";
+import connection from "./src/conn/db.js";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import userrouter from "./routes/user.js";
-import bookrouter from "./routes/books.js";
-import favouriterouter from "./routes/favourites.js";
-import cartrouter from "./routes/cart.js";
-import orderrouter from "./routes/order.js";
-import Books from "./models/books.js";
-import User from "./models/user.js";
+import userrouter from "./src/routes/user.js";
+import bookrouter from "./src/routes/books.js";
+import favouriterouter from "./src/routes/favourites.js";
+import cartrouter from "./src/routes/cart.js";
+import orderrouter from "./src/routes/order.js";
+import Books from "./src/models/books.js";
+import User from "./src/models/user.js";
 import bcrypt from "bcrypt";
 // ^ middlewares ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 const app = express();
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
   credentials: true,
 };
 
@@ -33,24 +33,6 @@ app.use("/api/v1", bookrouter);
 app.use("/api/v1", favouriterouter);
 app.use("/api/v1", cartrouter);
 app.use("/api/v1", orderrouter);
-
-// *connecting the database
-const startServer = async () => {
-  try {
-    await connection(process.env.MONGO_URI);
-    console.log("✅ Database connected, starting server...");
-
-    app.listen(port, () => {
-      console.log(`✅ Server is running on port ${port}`);
-    });
-  } catch (error) {
-    console.log("❌ Failed to start server:", error.message);
-    process.exit(1);
-  }
-};
-
-const port = process.env.PORT || 3000;
-startServer();
 
 // * Seed books route for testing
 app.post("/api/v1/seed-books", async (req, res) => {
@@ -176,4 +158,4 @@ app.post("/api/v1/seed-users", async (req, res) => {
   }
 });
 
-// Database is already started in startServer() above, no need for app.listen here
+export default app;
