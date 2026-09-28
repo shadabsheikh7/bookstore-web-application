@@ -1,157 +1,239 @@
+/** @format */
+
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ImMenu } from "react-icons/im";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ImMenu, ImCross } from "react-icons/im";
+import {
+  FaBookOpen,
+  FaHome,
+  FaShoppingCart,
+  FaUser,
+  FaBook,
+  FaUserShield,
+  FaSignInAlt,
+  FaUserPlus,
+  FaSignOutAlt,
+} from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { authActions } from "../../store/auth";
 
 const Navbar = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [mobile, setMobile] = useState(false);
+
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const role = useSelector((state) => state.auth.role);
+
+  const closeMobileMenu = () => {
+    setMobile(false);
+  };
+
+  const handleLogout = () => {
+    dispatch(authActions.logout());
+    dispatch(authActions.changerole("user"));
+
+    localStorage.removeItem("id");
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+
+    closeMobileMenu();
+    navigate("/");
+  };
+
   const links = [
     {
       title: "Home",
       link: "/",
+      icon: <FaHome />,
+      show: true,
     },
     {
       title: "All Books",
       link: "/all-books",
+      icon: <FaBook />,
+      show: true,
     },
     {
       title: "Cart",
       link: "/cart",
+      icon: <FaShoppingCart />,
+      show: isLoggedIn,
     },
     {
       title: "Profile",
       link: "/profile",
+      icon: <FaUser />,
+      show: isLoggedIn && role === "user",
     },
     {
       title: "Admin Profile",
       link: "/profile",
+      icon: <FaUserShield />,
+      show: isLoggedIn && role === "admin",
     },
   ];
-  let dispatch = useDispatch();
-  const history = useNavigate();
 
-  const [mobile, setMobile] = useState("hidden");
-  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
-  const role = useSelector((state) => state.auth.role);
-  if (isLoggedIn === false) {
-    links.splice(2, 3);
-  }
-  if (isLoggedIn === true && role === "user") {
-    links.splice(4, 1);
-  }
-  if (isLoggedIn === true && role === "admin") {
-    links.splice(2, 2);
-  }
+  const visibleLinks = links.filter((item) => item.show);
+
   return (
     <>
-      <nav className=" relative z-30 bg-slate-400 px-8 py-4 flex items-center justify-between">
-        {/* for logo div left side */}
-        <div>
-          <h4 className="text-2xl font-semibold">BookStore</h4>
-        </div>
-        {/* for right side navbar links  */}
-        <div className="block md:flex justify-between items-center gap-4">
-          {/* links  */}
-          <div className=" hidden md:flex gap-4 ">
-            {links.map((item, i) => (
-              <div className="flex items-center" key={i}>
+      {/* ================= MAIN NAVBAR ================= */}
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          {/* Logo */}
+          <Link
+            to="/"
+            onClick={closeMobileMenu}
+            className="flex items-center gap-2"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-600 text-white shadow-md shadow-green-600/20">
+              <FaBookOpen className="text-xl" />
+            </div>
+
+            <div>
+              <h1 className="text-xl font-bold tracking-tight text-[#173d2b]">
+                Book<span className="text-green-600">Store</span>
+              </h1>
+
+              <p className="hidden text-[10px] font-medium uppercase tracking-widest text-gray-400 sm:block">
+                Read • Discover • Enjoy
+              </p>
+            </div>
+          </Link>
+
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-1 md:flex">
+            {visibleLinks.map((item) => {
+              const isActive = location.pathname === item.link;
+
+              return (
                 <Link
-                  className="px-4 py-1 border border-blue-500 rounded"
+                  key={item.title}
                   to={item.link}
+                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                    isActive
+                      ? "bg-green-50 text-green-700"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-green-700"
+                  }`}
                 >
+                  <span className="text-sm">{item.icon}</span>
                   {item.title}
                 </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
-          {/* buttons */}
-          {isLoggedIn === false ? (
-            <div className=" hidden md:flex justify-between gap-4 items-center">
-              <Link
-                to="/sign-up"
-                className="bg-slate-400 border-2  hover:bg-white border-orange-500  rounded px-3 py-1"
-              >
-                Sign-Up
-              </Link>
-              <Link
-                to="/login"
-                className="bg-orange-500 px-3 hover:bg-white py-1 rounded"
-              >
-                Login
-              </Link>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                dispatch(authActions.logout());
-                dispatch(authActions.changerole("user"));
-                localStorage.clear("id");
-                localStorage.clear("token");
-                localStorage.clear("role");
-                history("/");
-              }}
-            >
-              Log Out
-            </button>
-          )}
 
+          {/* Desktop Auth */}
+          <div className="hidden items-center gap-2 md:flex">
+            {!isLoggedIn ? (
+              <>
+                <Link
+                  to="/sign-up"
+                  className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-green-400 hover:bg-green-50 hover:text-green-700"
+                >
+                  <FaUserPlus />
+                  Sign Up
+                </Link>
+
+                <Link
+                  to="/login"
+                  className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
+                >
+                  <FaSignInAlt />
+                  Login
+                </Link>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-500 transition hover:bg-red-50"
+              >
+                <FaSignOutAlt />
+                Logout
+              </button>
+            )}
+          </div>
+
+          {/* Mobile Menu Button */}
           <button
-            className="block text-white md:hidden text-2xl"
-            onClick={() =>
-              mobile === "hidden" ? setMobile("block") : setMobile("hidden")
-            }
+            type="button"
+            onClick={() => setMobile(!mobile)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50 text-green-700 transition hover:bg-green-100 md:hidden"
+            aria-label="Toggle menu"
           >
-            <ImMenu />
+            {mobile ? <ImCross /> : <ImMenu />}
           </button>
         </div>
       </nav>
 
-      {/* mobile nav bar  */}
+      {/* ================= MOBILE MENU ================= */}
+      {mobile && (
+        <div className="fixed inset-x-0 top-16 z-40 border-b border-gray-200 bg-white shadow-xl md:hidden">
+          <div className="max-h-[calc(100vh-4rem)] overflow-y-auto px-4 py-5">
+            {/* Mobile Navigation */}
+            <div className="space-y-2">
+              {visibleLinks.map((item) => {
+                const isActive = location.pathname === item.link;
 
-      <div
-        className={`${mobile} bg-green-500 h-screen w-full absolute z-20 flex flex-col items-center justify-start gap-8 py-10`}
-      >
-        <div className="  flex flex-col gap-8 items-center justify-between">
-          {links.map((item, i) => (
-            <Link
-              to={item.link}
-              key={i}
-              className="text-4xl px-6 py-2 font-semibold "
-              onClick={() =>
-                mobile === "hidden" ? setMobile("block") : setMobile("hidden")
-              }
-            >
-              {" "}
-              {item.title}
-            </Link>
-          ))}
-        </div>
-        {/* https://www.youtube.com/watch?v=EwzWg-Joxq0 */}
-        <div className=" flex flex-col justify-between gap-8 items-center w-full text-center">
-          {isLoggedIn === false && (
-            <>
-              <Link
-                to="/sign-up"
-                className="text-4xl px-6 py-2 w-[80%]  font-semibold  rounded hover:bg-red-700 hover:text-black "
-                onClick={() =>
-                  mobile === "hidden" ? setMobile("block") : setMobile("hidden")
-                }
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.link}
+                    onClick={closeMobileMenu}
+                    className={`flex items-center gap-4 rounded-xl px-4 py-3.5 text-base font-semibold transition ${
+                      isActive
+                        ? "bg-green-50 text-green-700"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-green-700"
+                    }`}
+                  >
+                    <span className="text-lg">{item.icon}</span>
+                    {item.title}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Divider */}
+            <div className="my-5 h-px bg-gray-200" />
+
+            {/* Mobile Auth */}
+            {!isLoggedIn ? (
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  to="/sign-up"
+                  onClick={closeMobileMenu}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+                >
+                  <FaUserPlus />
+                  Sign Up
+                </Link>
+
+                <Link
+                  to="/login"
+                  onClick={closeMobileMenu}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-green-600 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+                >
+                  <FaSignInAlt />
+                  Login
+                </Link>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 py-3 text-sm font-semibold text-red-500 transition hover:bg-red-100"
               >
-                Sign-Up
-              </Link>
-              <Link
-                to="/login"
-                className="text-4xl px-6 py-2 w-[80%] font-semibold border-2 rounded border-yellow-400 "
-                onClick={() =>
-                  mobile === "hidden" ? setMobile("block") : setMobile("hidden")
-                }
-              >
-                Login
-              </Link>
-            </>
-          )}
+                <FaSignOutAlt />
+                Logout
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

@@ -19,52 +19,70 @@ import Newcom from "./components/Profile/Newcom";
 import Allorders from "./pages/Allorders";
 import AddBook from "./pages/AddBook";
 import UpdateBook from "./pages/UpdateBook";
-// import ProtectedRoute from './utils/ProtectedRoute'
 
 const App = () => {
   const dispatch = useDispatch();
   const role = useSelector((state) => state.auth.role);
 
   useEffect(() => {
-    if (
-      localStorage.getItem("id") &&
-      localStorage.getItem("token") &&
-      localStorage.getItem("role")
-    ) {
+    const id = localStorage.getItem("id");
+    const token = localStorage.getItem("token");
+    const savedRole = localStorage.getItem("role");
+
+    if (id && token && savedRole) {
       dispatch(authActions.login());
-      dispatch(authActions.changerole(localStorage.getItem("role")));
+      dispatch(authActions.changerole(savedRole));
     }
-  }, []);
-  console.log(role);
+  }, [dispatch]);
 
   return (
     <>
       <Navbar />
+
       <Routes>
-        <Route exact path="/" element={<Home />} />
+        {/* HOME */}
+        <Route path="/" element={<Home />} />
+
+        {/* BOOKS */}
         <Route path="/all-books" element={<AllBooks />} />
+
+        {/* CART */}
         <Route path="/cart" element={<Cart />} />
 
+        {/* PROFILE */}
         <Route path="/profile" element={<Profile />}>
           {role === "user" ? (
             <Route index element={<Favourite />} />
           ) : (
             <Route index element={<Allorders />} />
           )}
-          {role === "admin" ? (
-            <Route path="/profile/add-book" element={<AddBook />} />
-          ) : (
-            ""
+
+          {role === "admin" && (
+            <Route path="add-book" element={<AddBook />} />
           )}
-          <Route path="/profile/settings" element={<Settings />} />
-          <Route path="/profile/orderHistory" element={<Newcom />} />
+
+          <Route path="settings" element={<Settings />} />
+
+          <Route path="orderHistory" element={<Newcom />} />
         </Route>
 
+        {/* AUTH */}
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/view-book-details/:id" element={<ViewBookDetails />} />
-        <Route path="/update-book/:id" element={<UpdateBook />} />
+
+        {/* BOOK DETAILS */}
+        <Route
+          path="/view-book-details/:id"
+          element={<ViewBookDetails />}
+        />
+
+        {/* EDIT BOOK */}
+        <Route
+          path="/update-book/:id"
+          element={<UpdateBook />}
+        />
       </Routes>
+
       <Footer />
     </>
   );

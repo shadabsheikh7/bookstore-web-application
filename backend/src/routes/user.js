@@ -5,139 +5,205 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import authntication2 from "./userAuth2.js";
+
 const userrouter = express.Router();
 
-// ^ *******   api endpoints
-// ~ sign -up api
+// ==========================================
+// SIGN-UP
+// ==========================================
 
 userrouter.post("/sign-up", async (req, res) => {
   try {
     const { username, email, password, address } = req.body;
-    // & check username should be greater than 3 words
-    if (username.length < 4) {
-      return res
-        .status(400)
-        .json({ message: "username length should be greater than 3" });
-    }
-    // & check username already exists
-    const existingusername = await User.findOne({ username });
 
-    if (existingusername) {
-      return res.status(400).json({ message: "user already exists" });
-    }
-
-    // & check email already exists
-    const existingemail = await User.findOne({ email: email });
-    if (existingemail) {
-      return res.status(400).json({ message: "email already exists" });
-    }
-
-    bcrypt.hash(password, 10, async function (err, hash) {
-      // !  Store hash in your password DB.
-      if (err) {
-        return res.status(500).json({ message: "internal server error" });
-      }
-      const saveuser = new User({
-        username: username,
-        email: email,
-        password: hash,
-        address: address,
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        message: "Username, email and password are required",
       });
-      await saveuser.save();
-      return res.status(200).json({ message: "successfully  Register" });
+    }
+
+    if (username.length < 4) {
+      return res.status(400).json({
+        message: "Username length should be greater than 3",
+      });
+    }
+
+    const existingUsername = await User.findOne({ username });
+
+    if (existingUsername) {
+      return res.status(400).json({
+        message: "Username already exists",
+      });
+    }
+
+    const existingEmail = await User.findOne({ email });
+
+    if (existingEmail) {
+      return res.status(400).json({
+        message: "Email already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const saveUser = new User({
+      username,
+      email,
+      password: hashedPassword,
+      address,
+    });
+
+    await saveUser.save();
+
+    return res.status(201).json({
+      message: "Successfully registered",
     });
   } catch (error) {
-    res.status(500).json({ message: "internal server error" });
+    console.error("SIGN-UP ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 });
-// ~ sign-in api
+
+// ==========================================
+// SIGN-IN
+// ==========================================
 
 userrouter.post("/sign-in", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    console.log("LOGIN REQUEST:", email);
+
     if (!email || !password) {
       return res.status(400).json({
-        messaage: "please provide email and password properly",
+        message: "Please provide email and password",
       });
     }
-    const userfind = await User.findOne({ email });
-    if (!userfind) {
-      return res.status(400).json({
-        messaage: "user not find",
-      });
-    }
-    bcrypt.compare(password, userfind.password, function (err, result) {
-      if (err) {
-        return res.status(500).json({
-          message: "internal server error",
-        });
-      }
 
-      if (!result) {
-        return res.status(400).json({
-          message: "incorrect username and password",
-        });
-      }
-      if (result) {
-        const payload = {
-          _id: userfind._id,
-          email: userfind.email,
-          role: userfind.role,
-        };
-        const tokenoption = {
-          httpOnly: true,
-          secure: true,
-        };
-        jwt.sign(
-          payload,
-          process.env.SECRET,
-          { expiresIn: "8h" },
-          function (err, token) {
-            if (err) {
-              return res.status(500).json({
-                messaage: "internal server error",
-              });
-            }
-            // ✅ Login successful, token generated
-            return res.status(200).json({
-              id: userfind._id,
-              role: userfind.role,
-              token: token,
-            });
-          },
-        );
-      }
+    const userFind = await User.findOne({ email });
+
+    if (!userFind) {
+      return res.status(400).json({
+        message: "User not found",
+      });
+    }
+
+    if (!userFind.password) {
+      return res.status(500).json({
+        message: "User password is missing in database",
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      userFind.password,
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(400).json({
+        message: "Incorrect username or password",
+      });
+    }
+
+    if (!process.env.SECRET) {
+      console.error("SECRET is missing from .env");
+
+      return res.status(500).json({
+        message: "JWT secret is missing",
+      });
+    }
+
+    const payload = {
+      _id: userFind._id,
+      email: userFind.email,
+      role: userFind.role,
+    };
+
+    const token = jwt.sign(payload, process.env.SECRET, {
+      expiresIn: "8h",
+    });
+
+    return res.status(200).json({
+      message: "Login successful",
+      id: userFind._id,
+      role: userFind.role,
+      token,
     });
   } catch (error) {
-    res.status(500).json({ message: "internal server error" });
+    console.error("SIGN-IN ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 });
-// ~user details api
+
+// ==========================================
+// USER DETAILS
+// ==========================================
+
 userrouter.get("/user-details", authntication2, async (req, res) => {
   try {
     const { _id } = req.user;
 
-    if (_id === "") {
+    if (!_id) {
       return res.status(400).json({
-        messaage: err.messaage,
+        message: "User ID is missing",
       });
     }
-    const userfindnew = await User.findById(_id).select("-password");
-    return res.status(201).json(userfindnew);
+
+    const userFindNew = await User.findById(_id).select("-password");
+
+    if (!userFindNew) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json(userFindNew);
   } catch (error) {
-    res.status(500).json({ message: "internal server error" });
+    console.error("USER DETAILS ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 });
 
-// ~ update user address api
+// ==========================================
+// UPDATE USER ADDRESS
+// ==========================================
+
 userrouter.put("/update-address", authntication2, async (req, res) => {
   try {
     const { _id } = req.user;
     const { address } = req.body;
-    await User.findByIdAndUpdate(_id, { address: address });
-    return res.status(200).json({ message: "user updated succefully " });
+
+    if (!_id) {
+      return res.status(400).json({
+        message: "User ID is missing",
+      });
+    }
+
+    await User.findByIdAndUpdate(_id, { address });
+
+    return res.status(200).json({
+      message: "User updated successfully",
+    });
   } catch (error) {
-    res.status(500).json({ message: "internal server error" });
+    console.error("UPDATE ADDRESS ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+      error: error.message,
+    });
   }
 });
+
 export default userrouter;

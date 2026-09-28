@@ -5,12 +5,10 @@ import RecentlyAdded from "../components/Home/RecentlyAdded";
 
 const Home = () => {
   return (
-    <>
-      <div className="px-10 py-8 bg-lime-900">
-        <Hero />
-        <RecentlyAdded />
-      </div>
-    </>
+    <main className="min-h-screen bg-[#f6f3eb]">
+      <Hero />
+      <RecentlyAdded />
+    </main>
   );
 };
 

@@ -1,11 +1,24 @@
 /** @format */
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  FaUser,
+  FaEnvelope,
+  FaLocationDot,
+  FaGear,
+  FaPenToSquare,
+} from "react-icons/fa6";
 import Loader from "../Loader/Loader";
+
 const Settings = () => {
-  const [userdata, setuserData] = useState();
-  const [address, setAddress] = useState({ address: " " });
+  const [userdata, setUserData] = useState(null);
+  const [address, setAddress] = useState({ address: "" });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
   const headers = {
     authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -13,112 +26,223 @@ const Settings = () => {
 
   const change = (e) => {
     const { name, value } = e.target;
-    setAddress({ ...address, [name]: value });
+
+    setAddress((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  //   useEffect(() => {
-  //     const fetch = async () => {
-  //       try {
-  //         const res = await axios.get(
-  //           process.env.API_URL+"/api/v1/user-details",
-  //           { headers }
-  //         );
-  //         setuserData(res.data);
-  //         setAddress({ address: res.data.address });
-  //         console.log(res);
-  //       } catch (error) {
-  //         if (error.response && error.response.status === 401) {
-  //           localStorage.clear();
-  //         }
-  //         console.log("Catch");
-
-  //         console.log("error in orderhistory", error);
-  //       }
-  //     };
-  //     fetch();
-  //   }, []);
-  useEffect(() => {
-    const fetch = async () => {
-      axios
-        .get(import.meta.env.VITE_API_URL + "/api/v1/user-details", { headers })
-        .then((res) => {
-          setuserData(res.data);
-          setAddress({ address: res.data.address });
-          console.log(res);
-        })
-        .catch((error) => {
-          console.log("Catch block running");
-          console.log("error", error);
-
-          if (error.response && error.response.status === 401) {
-            localStorage.clear();
-            window.location.href = "/login";
-          }
-        });
-    };
-    fetch();
-  }, []);
-
-  const submitaddress = async () => {
+  const fetchUserData = async () => {
     try {
-      const response = await axios.put(
-        import.meta.env.VITE_API_URL + "/api/v1/update-address",
-        address,
-        { headers },
-      );
-      console.log(response);
-      alert(response.data.message);
+      setLoading(true);
+      setError("");
+
+      const res = await axios.get(`${API_URL}/api/v1/user-details`, {
+        headers,
+      });
+
+      setUserData(res.data);
+
+      setAddress({
+        address: res.data?.address || "",
+      });
     } catch (error) {
-      console.log("error ", error, error.message);
+      console.error("User details error:", error);
+
+      if (error.response?.status === 401) {
+        localStorage.removeItem("id");
+        localStorage.removeItem("token");
+        localStorage.removeItem("role");
+
+        window.location.href = "/login";
+        return;
+      }
+
+      setError(
+        error.response?.data?.message ||
+          "Unable to load your settings.",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  const submitAddress = async () => {
+    if (!address.address.trim()) {
+      alert("Please enter your address.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const response = await axios.put(
+        `${API_URL}/api/v1/update-address`,
+        {
+          address: address.address.trim(),
+        },
+        { headers },
+      );
+
+      alert(response.data?.message || "Address updated successfully.");
+
+      await fetchUserData();
+    } catch (error) {
+      console.error("Update address error:", error);
+
+      alert(
+        error.response?.data?.message ||
+          "Unable to update your address.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[500px] items-center justify-center bg-[#f6f3eb]">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[500px] flex-col items-center justify-center bg-[#f6f3eb] px-6 text-center">
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
+          <FaGear className="text-2xl" />
+        </div>
+
+        <h2 className="text-2xl font-bold text-[#173d2b]">
+          Unable to load settings
+        </h2>
+
+        <p className="mt-2 max-w-md text-sm text-red-600">
+          {error}
+        </p>
+
+        <button
+          type="button"
+          onClick={fetchUserData}
+          className="mt-5 rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <>
-      {!userdata && <Loader />}
-      {""}
-      {userdata && (
-        <div className="h-[100%] p-0 md:p-4 text-zinc-100">
-          <h1 className="text-3xl md:text-5xl font-semibold text-yellow-500 mx-auto mb-8">
-            Settings
-          </h1>
-          <div className="flex gap-12   ">
-            <div>
-              <label htmlFor="">Username</label>
-              <p className="p-2 rounded bg-zinc-800 mt-2 font-semibold px-4">
-                {userdata.username}
-              </p>
+    <div className="min-h-full bg-[#f6f3eb] px-4 py-6 sm:px-6">
+      {/* Header */}
+      <div className="mb-7">
+        <div className="mb-2 flex items-center gap-2 text-green-600">
+          <FaGear />
+          <span className="text-xs font-bold uppercase tracking-wider">
+            Account Settings
+          </span>
+        </div>
+
+        <h1 className="text-2xl font-bold text-[#173d2b] sm:text-3xl">
+          Settings
+        </h1>
+
+        <p className="mt-1 text-sm text-gray-500">
+          Manage your account information and delivery address.
+        </p>
+      </div>
+
+      {/* Account Information */}
+      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#173d2b]">
+            <FaUser className="text-green-600" />
+            Account Information
+          </h2>
+
+          <p className="mt-1 text-xs text-gray-500">
+            Your account details are shown below.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-6">
+          {/* Username */}
+          <div className="rounded-xl border border-gray-100 bg-[#faf9f5] p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-gray-400">
+              <FaUser />
+              Username
             </div>
-            <div>
-              <label htmlFor=" ">Email</label>
-              <p className="p-2 rounded bg-zinc-800 mt-2 font-semibold px-4">
-                {userdata.email}
-              </p>
+
+            <p className="break-words text-sm font-semibold text-gray-800">
+              {userdata?.username || "Not available"}
+            </p>
+          </div>
+
+          {/* Email */}
+          <div className="rounded-xl border border-gray-100 bg-[#faf9f5] p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-gray-400">
+              <FaEnvelope />
+              Email
             </div>
+
+            <p className="break-all text-sm font-semibold text-gray-800">
+              {userdata?.email || "Not available"}
+            </p>
           </div>
-          <div className="mt-4 flex flex-col">
-            <label htmlFor="">Address</label>
-            <textarea
-              className="p-2 rounded bg-zinc-8-- mt-2 font-semibold text-black"
-              name="address"
-              rows={5}
-              value={address.address}
-              placeholder="address here"
-              onChange={change}
-            ></textarea>
-          </div>
+        </div>
+      </div>
+
+      {/* Address */}
+      <div className="mt-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-[#173d2b]">
+            <FaLocationDot className="text-green-600" />
+            Delivery Address
+          </h2>
+
+          <p className="mt-1 text-xs text-gray-500">
+            Update the address where you want your books delivered.
+          </p>
+        </div>
+
+        <div className="p-5 sm:p-6">
+          <label
+            htmlFor="address"
+            className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700"
+          >
+            <FaPenToSquare className="text-green-600" />
+            Address
+          </label>
+
+          <textarea
+            id="address"
+            name="address"
+            rows={5}
+            value={address.address}
+            placeholder="Enter your complete delivery address..."
+            onChange={change}
+            className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-100"
+          />
+
           <div className="mt-4 flex justify-end">
             <button
-              className="bg-yellow-500
-                         text-zinc-900 font-semibold px-3 py-2 rounded hover:bg-yellow-400"
-              onClick={submitaddress}
+              type="button"
+              onClick={submitAddress}
+              disabled={saving}
+              className="rounded-xl bg-green-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Update
+              {saving ? "Updating..." : "Update Address"}
             </button>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
 };
 

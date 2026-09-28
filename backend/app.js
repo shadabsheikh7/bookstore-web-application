@@ -2,21 +2,24 @@
 
 import dotenv from "dotenv";
 dotenv.config();
+
 import connection from "./src/conn/db.js";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+
 import userrouter from "./src/routes/user.js";
 import bookrouter from "./src/routes/books.js";
 import favouriterouter from "./src/routes/favourites.js";
 import cartrouter from "./src/routes/cart.js";
 import orderrouter from "./src/routes/order.js";
+
 import Books from "./src/models/books.js";
 import User from "./src/models/user.js";
 import bcrypt from "bcrypt";
-// ^ middlewares ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 const app = express();
+
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || "http://localhost:5173",
   credentials: true,
@@ -34,7 +37,7 @@ app.use("/api/v1", favouriterouter);
 app.use("/api/v1", cartrouter);
 app.use("/api/v1", orderrouter);
 
-// * Seed books route for testing
+// Seed books
 app.post("/api/v1/seed-books", async (req, res) => {
   try {
     const sampleBooks = [
@@ -115,10 +118,9 @@ app.post("/api/v1/seed-books", async (req, res) => {
   }
 });
 
-// * Seed users route for testing
+// Seed users
 app.post("/api/v1/seed-users", async (req, res) => {
   try {
-    // Hash passwords
     const userPassword = await bcrypt.hash("user", 10);
     const adminPassword = await bcrypt.hash("alpha", 10);
 
@@ -146,8 +148,16 @@ app.post("/api/v1/seed-users", async (req, res) => {
       message: "Sample users added successfully",
       count: sampleUsers.length,
       users: {
-        user: { email: "user@gmail.com", password: "user", role: "user" },
-        admin: { email: "alpha@gmail.com", password: "alpha", role: "admin" },
+        user: {
+          email: "user@gmail.com",
+          password: "user",
+          role: "user",
+        },
+        admin: {
+          email: "alpha@gmail.com",
+          password: "alpha",
+          role: "admin",
+        },
       },
     });
   } catch (error) {

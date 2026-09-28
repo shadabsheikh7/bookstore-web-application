@@ -1,21 +1,23 @@
 /** @format */
+
 import dotenv from "dotenv";
+dotenv.config();
+
 import app from "../app.js";
 import connection from "./conn/db.js";
 
-dotenv.config();
-// *connecting the database
+const PORT = process.env.PORT || 8080;
+
 const startServer = async () => {
   try {
-    await connection(process.env.MONGO_URI);
-    console.log("✅ Database connected, starting server...");
+    await connection();
 
-    const port = process.env.PORT || 3000;
-    app.listen(port, () => {
-      console.log(`✅ Server is running on port ${port}`);
+    app.listen(PORT, () => {
+      console.log(`✅ Server is running on port ${PORT}`);
+      console.log(`✅ API: http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.log("❌ Failed to start server:", error.message);
+    console.error("❌ Server startup failed:", error.message);
     process.exit(1);
   }
 };
