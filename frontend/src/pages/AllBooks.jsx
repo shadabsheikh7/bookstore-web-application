@@ -12,7 +12,8 @@ const AllBooks = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const API_URL = "http://localhost:8080";
+  // Production: Vercel env | Local: localhost
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
   const fetchData = async () => {
     try {
@@ -124,9 +125,7 @@ const AllBooks = () => {
         {/* ================= ERROR ================= */}
         {!loading && error && (
           <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-red-200 bg-red-50 px-6 text-center">
-            <p className="mb-4 text-lg font-medium text-red-600">
-              {error}
-            </p>
+            <p className="mb-4 text-lg font-medium text-red-600">{error}</p>
 
             <button
               type="button"
