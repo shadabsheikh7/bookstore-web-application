@@ -14,7 +14,6 @@ import favouriterouter from "./src/routes/favourites.js";
 import cartrouter from "./src/routes/cart.js";
 import orderrouter from "./src/routes/order.js";
 
-import Books from "./src/models/books.js";
 import User from "./src/models/user.js";
 import bcrypt from "bcrypt";
 
@@ -37,132 +36,43 @@ app.use("/api/v1", favouriterouter);
 app.use("/api/v1", cartrouter);
 app.use("/api/v1", orderrouter);
 
-// Seed books
-app.post("/api/v1/seed-books", async (req, res) => {
+// Temporary admin update
+app.post("/api/v1/update-admin", async (req, res) => {
   try {
-    const sampleBooks = [
-      {
-        url: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500",
-        title: "The Great Gatsby",
-        author: "F. Scott Fitzgerald",
-        price: 499,
-        discount: 10,
-        desc: "A classic American novel set in the Jazz Age.",
-        language: "English",
-        stock: 50,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1507842955617-c4d2a4934d5f?w=500",
-        title: "To Kill a Mockingbird",
-        author: "Harper Lee",
-        price: 399,
-        discount: 15,
-        desc: "A gripping tale of racial injustice and childhood innocence.",
-        language: "English",
-        stock: 40,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500",
-        title: "1984",
-        author: "George Orwell",
-        price: 549,
-        discount: 20,
-        desc: "A dystopian novel about totalitarianism.",
-        language: "English",
-        stock: 35,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1543002588-d83cea1c2c7e?w=500",
-        title: "Pride and Prejudice",
-        author: "Jane Austen",
-        price: 349,
-        discount: 5,
-        desc: "A romantic novel of manners and marriage.",
-        language: "English",
-        stock: 60,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1507842955617-c4d2a4934d5f?w=500",
-        title: "The Catcher in the Rye",
-        author: "J.D. Salinger",
-        price: 299,
-        discount: 10,
-        desc: "A story of teenage rebellion and alienation.",
-        language: "English",
-        stock: 45,
-      },
-      {
-        url: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500",
-        title: "The Hobbit",
-        author: "J.R.R. Tolkien",
-        price: 599,
-        discount: 25,
-        desc: "An epic fantasy adventure.",
-        language: "English",
-        stock: 30,
-      },
-    ];
+    const { password } = req.body;
 
-    await Books.deleteMany({});
-    await Books.insertMany(sampleBooks);
+    if (!password) {
+      return res.status(400).json({
+        message: "Password is required",
+      });
+    }
 
-    res.status(200).json({
-      message: "Sample books added successfully",
-      count: sampleBooks.length,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error seeding books",
-      error: error.message,
-    });
-  }
-});
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-// Seed users
-app.post("/api/v1/seed-users", async (req, res) => {
-  try {
-    const userPassword = await bcrypt.hash("user", 10);
-    const adminPassword = await bcrypt.hash("alpha", 10);
-
-    const sampleUsers = [
+    const admin = await User.findOneAndUpdate(
+      { email: "alpha@gmail.com" },
       {
-        username: "user",
-        email: "user@gmail.com",
-        password: userPassword,
-        address: "123 Main St, City",
-        role: "user",
-      },
-      {
-        username: "admin",
-        email: "alpha@gmail.com",
-        password: adminPassword,
-        address: "456 Admin Ave, City",
+        email: "sheikh@gmail.com",
+        password: hashedPassword,
         role: "admin",
       },
-    ];
+      { new: true }
+    );
 
-    await User.deleteMany({});
-    await User.insertMany(sampleUsers);
+    if (!admin) {
+      return res.status(404).json({
+        message: "Admin not found",
+      });
+    }
 
     res.status(200).json({
-      message: "Sample users added successfully",
-      count: sampleUsers.length,
-      users: {
-        user: {
-          email: "user@gmail.com",
-          password: "user",
-          role: "user",
-        },
-        admin: {
-          email: "alpha@gmail.com",
-          password: "alpha",
-          role: "admin",
-        },
-      },
+      message: "Admin email and password updated successfully",
     });
   } catch (error) {
+    console.error("Admin update error:", error);
+
     res.status(500).json({
-      message: "Error seeding users",
+      message: "Error updating admin",
       error: error.message,
     });
   }

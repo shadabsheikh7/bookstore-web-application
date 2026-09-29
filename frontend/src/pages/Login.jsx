@@ -32,20 +32,6 @@ const Login = () => {
     }));
   }
 
-  function setNormalUser() {
-    setData({
-      email: "user@gmail.com",
-      password: "user",
-    });
-  }
-
-  function setAdmin() {
-    setData({
-      email: "alpha@gmail.com",
-      password: "alpha",
-    });
-  }
-
   async function handlesubmit(e) {
     e.preventDefault();
 
@@ -91,28 +77,6 @@ const Login = () => {
           <h1 className="grid place-items-center mb-5 text-3xl font-semibold">
             Login
           </h1>
-
-          <p className="bg-red-500 p-1">
-            Here are two button just login as you want
-          </p>
-
-          <div className="flex justify-evenly mt-2">
-            <button
-              type="button"
-              className="font-semibold rounded py-0 px-6 text-1xl border bg-blue-400"
-              onClick={setNormalUser}
-            >
-              User
-            </button>
-
-            <button
-              type="button"
-              className="font-semibold py-2 px-4 text-1xl border bg-blue-400 rounded"
-              onClick={setAdmin}
-            >
-              Admin
-            </button>
-          </div>
 
           <form onSubmit={handlesubmit} className="flex flex-col gap-5">
             <div className="grid">
