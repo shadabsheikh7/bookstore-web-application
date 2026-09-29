@@ -14,7 +14,7 @@ import {
 } from "react-icons/fa";
 import { useSelector } from "react-redux";
 
-const API_URL = "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 const ViewBookDetails = () => {
   const navigate = useNavigate();
@@ -570,7 +570,7 @@ const ViewBookDetails = () => {
                         <button
                           type="button"
                           onClick={decreaseQuantity}
-                          className="h-11 w-11 font-bold text-xl text-gray-700 transition hover:bg-gray-100"
+                          className="h-11 w-11 text-xl font-bold text-gray-700 transition hover:bg-gray-100"
                         >
                           −
                         </button>
@@ -582,7 +582,7 @@ const ViewBookDetails = () => {
                         <button
                           type="button"
                           onClick={increaseQuantity}
-                          className="h-11 w-11 font-bold text-xl text-gray-700 transition hover:bg-gray-100"
+                          className="h-11 w-11 text-xl font-bold text-gray-700 transition hover:bg-gray-100"
                         >
                           +
                         </button>

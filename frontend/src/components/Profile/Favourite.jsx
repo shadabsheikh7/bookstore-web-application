@@ -16,8 +16,7 @@ const Favourite = () => {
   const [favbook, setFavbook] = useState(null);
   const [error, setError] = useState("");
 
-  const API_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const headers = {
     authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -26,6 +25,10 @@ const Favourite = () => {
   const fetchFavouriteBooks = async () => {
     try {
       setError("");
+
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
 
       const response = await axios.get(`${API_URL}/api/v1/get-fav`, {
         headers,
@@ -37,6 +40,7 @@ const Favourite = () => {
 
       setError(
         error.response?.data?.message ||
+          error.message ||
           "Unable to load your favourite books.",
       );
     }

@@ -12,7 +12,7 @@ import {
   FaTrash,
 } from "react-icons/fa6";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API = import.meta.env.VITE_API_URL;
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -32,6 +32,10 @@ const Cart = () => {
       setLoading(true);
       setError("");
 
+      if (!API) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
+
       const response = await axios.get(`${API}/api/v1/get-cart-item`, {
         headers: getHeaders(),
       });
@@ -42,6 +46,7 @@ const Cart = () => {
 
       setError(
         error.response?.data?.message ||
+          error.message ||
           "Unable to load your cart. Please try again.",
       );
     } finally {
@@ -57,6 +62,10 @@ const Cart = () => {
     try {
       setUpdating(bookId);
 
+      if (!API) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
+
       await axios.put(
         `${API}/api/v1/increase-cart/${bookId}`,
         {},
@@ -67,7 +76,11 @@ const Cart = () => {
 
       await getCart();
     } catch (error) {
-      alert(error.response?.data?.message || "Unable to increase quantity.");
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to increase quantity.",
+      );
     } finally {
       setUpdating("");
     }
@@ -76,6 +89,10 @@ const Cart = () => {
   const decreaseQuantity = async (bookId) => {
     try {
       setUpdating(bookId);
+
+      if (!API) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
 
       await axios.put(
         `${API}/api/v1/decrease-cart/${bookId}`,
@@ -87,7 +104,11 @@ const Cart = () => {
 
       await getCart();
     } catch (error) {
-      alert(error.response?.data?.message || "Unable to decrease quantity.");
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to decrease quantity.",
+      );
     } finally {
       setUpdating("");
     }
@@ -96,6 +117,10 @@ const Cart = () => {
   const removeItem = async (bookId) => {
     try {
       setUpdating(bookId);
+
+      if (!API) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
 
       await axios.put(
         `${API}/api/v1/rem-from-cart/${bookId}`,
@@ -107,7 +132,11 @@ const Cart = () => {
 
       await getCart();
     } catch (error) {
-      alert(error.response?.data?.message || "Unable to remove book.");
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to remove book.",
+      );
     } finally {
       setUpdating("");
     }

@@ -10,6 +10,8 @@ import {
   FaStar,
 } from "react-icons/fa6";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Bookcard = ({ dataprops, favourite }) => {
   const [imageError, setImageError] = useState(false);
   const [removing, setRemoving] = useState(false);
@@ -35,8 +37,12 @@ const Bookcard = ({ dataprops, favourite }) => {
     try {
       setRemoving(true);
 
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
+
       const res = await axios.put(
-        "http://localhost:8080/api/v1/rem-from-fav",
+        `${API_URL}/api/v1/rem-from-fav`,
         {},
         { headers },
       );
@@ -48,6 +54,7 @@ const Bookcard = ({ dataprops, favourite }) => {
 
       alert(
         error.response?.data?.message ||
+          error.message ||
           "Unable to remove book from favourites.",
       );
     } finally {

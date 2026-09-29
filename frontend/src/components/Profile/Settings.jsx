@@ -18,7 +18,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const headers = {
     authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -37,6 +37,10 @@ const Settings = () => {
     try {
       setLoading(true);
       setError("");
+
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
 
       const res = await axios.get(`${API_URL}/api/v1/user-details`, {
         headers,
@@ -61,6 +65,7 @@ const Settings = () => {
 
       setError(
         error.response?.data?.message ||
+          error.message ||
           "Unable to load your settings.",
       );
     } finally {
@@ -81,6 +86,10 @@ const Settings = () => {
     try {
       setSaving(true);
 
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
+
       const response = await axios.put(
         `${API_URL}/api/v1/update-address`,
         {
@@ -97,6 +106,7 @@ const Settings = () => {
 
       alert(
         error.response?.data?.message ||
+          error.message ||
           "Unable to update your address.",
       );
     } finally {

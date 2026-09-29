@@ -17,7 +17,7 @@ const Allorders = () => {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState("");
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const headers = {
     authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -26,6 +26,10 @@ const Allorders = () => {
   const fetchOrderData = async () => {
     try {
       setError("");
+
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
 
       const res = await axios.get(`${API_URL}/api/v1/get-all-order`, {
         headers,
@@ -37,6 +41,7 @@ const Allorders = () => {
 
       setError(
         error.response?.data?.message ||
+          error.message ||
           "Unable to load order history.",
       );
     }
@@ -297,7 +302,9 @@ const Allorders = () => {
                     </div>
 
                     <div className="text-right">
-                      <p className="mb-1 text-xs text-gray-400">Status</p>
+                      <p className="mb-1 text-xs text-gray-400">
+                        Status
+                      </p>
 
                       <span
                         className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold ${getStatusClass(

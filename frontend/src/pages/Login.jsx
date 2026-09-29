@@ -21,6 +21,8 @@ const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   function handleonchange(e) {
     const { name, value } = e.target;
 
@@ -48,8 +50,12 @@ const Login = () => {
     e.preventDefault();
 
     try {
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
+
       const res = await axios.post(
-        "http://localhost:8080/api/v1/sign-in",
+        `${API_URL}/api/v1/sign-in`,
         data,
       );
 

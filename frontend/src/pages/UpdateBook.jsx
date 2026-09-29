@@ -1,11 +1,11 @@
+
 /** @format */
 
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const UpdateBook = () => {
   const { id } = useParams();
@@ -25,14 +25,15 @@ const UpdateBook = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // ==========================================
   // GET BOOK DETAILS
-  // ==========================================
-
   useEffect(() => {
     const fetchBook = async () => {
       try {
         setLoading(true);
+
+        if (!API_URL) {
+          throw new Error("VITE_API_URL is not configured.");
+        }
 
         const response = await axios.get(
           `${API_URL}/api/v1/get-book-by-id/${id}`,
@@ -63,6 +64,7 @@ const UpdateBook = () => {
 
         alert(
           error.response?.data?.message ||
+            error.message ||
             "Unable to load book details",
         );
 
@@ -77,10 +79,7 @@ const UpdateBook = () => {
     }
   }, [id, navigate]);
 
-  // ==========================================
   // INPUT CHANGE
-  // ==========================================
-
   const change = (e) => {
     const { name, value } = e.target;
 
@@ -90,10 +89,7 @@ const UpdateBook = () => {
     }));
   };
 
-  // ==========================================
   // SELLING PRICE
-  // ==========================================
-
   const originalPrice = Number(BData.price || 0);
 
   const discountPercent = Math.min(
@@ -105,15 +101,9 @@ const UpdateBook = () => {
     originalPrice * (1 - discountPercent / 100),
   );
 
-  const savings = Math.max(
-    originalPrice - sellingPrice,
-    0,
-  );
+  const savings = Math.max(originalPrice - sellingPrice, 0);
 
-  // ==========================================
   // UPDATE BOOK
-  // ==========================================
-
   const booksubmit = async () => {
     if (
       !BData.url.trim() ||
@@ -149,6 +139,10 @@ const UpdateBook = () => {
     try {
       setSaving(true);
 
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
+
       const token = localStorage.getItem("token");
 
       const response = await axios.post(
@@ -158,15 +152,9 @@ const UpdateBook = () => {
           title: BData.title.trim(),
           author: BData.author.trim(),
           language: BData.language.trim(),
-
-          // Original price
           price: Number(BData.price),
-
-          // Discount percentage
           discount: Number(BData.discount),
-
           desc: BData.desc.trim(),
-
           stock: Number(BData.stock),
         },
         {
@@ -190,6 +178,7 @@ const UpdateBook = () => {
 
       alert(
         error.response?.data?.message ||
+          error.message ||
           "Unable to update book.",
       );
     } finally {
@@ -197,10 +186,7 @@ const UpdateBook = () => {
     }
   };
 
-  // ==========================================
   // LOADING
-  // ==========================================
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f6f3eb] flex items-center justify-center">
@@ -215,16 +201,11 @@ const UpdateBook = () => {
     );
   }
 
-  // ==========================================
   // FORM
-  // ==========================================
-
   return (
     <div className="min-h-screen bg-[#f6f3eb] px-4 py-8">
       <div className="max-w-4xl mx-auto">
-
         {/* BACK BUTTON */}
-
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -234,11 +215,8 @@ const UpdateBook = () => {
         </button>
 
         {/* MAIN CARD */}
-
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-
           {/* HEADER */}
-
           <div className="bg-[#173d2b] px-6 py-6 text-white">
             <h1 className="text-3xl font-bold">
               Edit Book
@@ -250,11 +228,8 @@ const UpdateBook = () => {
           </div>
 
           {/* FORM */}
-
           <div className="p-6 md:p-8 space-y-6">
-
             {/* IMAGE URL */}
-
             <div>
               <label className="block mb-2 font-semibold text-[#173d2b]">
                 Image URL
@@ -271,7 +246,6 @@ const UpdateBook = () => {
             </div>
 
             {/* TITLE */}
-
             <div>
               <label className="block mb-2 font-semibold text-[#173d2b]">
                 Book Title
@@ -288,7 +262,6 @@ const UpdateBook = () => {
             </div>
 
             {/* AUTHOR */}
-
             <div>
               <label className="block mb-2 font-semibold text-[#173d2b]">
                 Author
@@ -305,7 +278,6 @@ const UpdateBook = () => {
             </div>
 
             {/* LANGUAGE */}
-
             <div>
               <label className="block mb-2 font-semibold text-[#173d2b]">
                 Language
@@ -322,11 +294,8 @@ const UpdateBook = () => {
             </div>
 
             {/* PRICE / DISCOUNT / STOCK */}
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-
               {/* ORIGINAL PRICE */}
-
               <div>
                 <label className="block mb-2 font-semibold text-[#173d2b]">
                   Original Price (₹)
@@ -344,7 +313,6 @@ const UpdateBook = () => {
               </div>
 
               {/* DISCOUNT */}
-
               <div>
                 <label className="block mb-2 font-semibold text-[#173d2b]">
                   Discount (%)
@@ -361,15 +329,12 @@ const UpdateBook = () => {
                   className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-100"
                 />
 
-                {/* LIVE SAVING */}
-
                 <p className="mt-2 text-sm text-green-600 font-semibold">
                   You save: ₹{savings}
                 </p>
               </div>
 
               {/* STOCK */}
-
               <div>
                 <label className="block mb-2 font-semibold text-[#173d2b]">
                   Stock
@@ -388,15 +353,12 @@ const UpdateBook = () => {
             </div>
 
             {/* LIVE PRICE PREVIEW */}
-
             <div className="rounded-2xl border border-green-200 bg-green-50 p-5">
-
               <p className="text-sm font-semibold text-gray-500">
                 Customer will pay
               </p>
 
               <div className="mt-2 flex flex-wrap items-center gap-3">
-
                 <span className="text-3xl font-extrabold text-green-700">
                   ₹{sellingPrice}
                 </span>
@@ -422,7 +384,6 @@ const UpdateBook = () => {
             </div>
 
             {/* DESCRIPTION */}
-
             <div>
               <label className="block mb-2 font-semibold text-[#173d2b]">
                 Description
@@ -439,9 +400,7 @@ const UpdateBook = () => {
             </div>
 
             {/* BUTTONS */}
-
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-
               <button
                 type="button"
                 onClick={() => navigate(-1)}
@@ -458,7 +417,6 @@ const UpdateBook = () => {
               >
                 {saving ? "Updating..." : "Update Book"}
               </button>
-
             </div>
           </div>
         </div>

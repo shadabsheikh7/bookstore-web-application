@@ -7,19 +7,25 @@ import { FaArrowRight, FaBookOpen } from "react-icons/fa";
 import Bookcard from "../bookcard/Bookcard";
 import Loader from "../Loader/Loader";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const RecentlyAdded = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError("");
 
-      const res = await axios.get(`${API_URL}/api/v1/get-recent-books`);
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured.");
+      }
+
+      const res = await axios.get(
+        `${API_URL}/api/v1/get-recent-books`,
+      );
 
       setData(res.data?.data || []);
     } catch (error) {
@@ -27,6 +33,7 @@ const RecentlyAdded = () => {
 
       setError(
         error.response?.data?.message ||
+          error.message ||
           "Unable to load recently added books.",
       );
     } finally {
@@ -46,6 +53,7 @@ const RecentlyAdded = () => {
           <div>
             <div className="mb-3 flex items-center gap-2 text-green-600">
               <FaBookOpen />
+
               <span className="text-sm font-semibold uppercase tracking-wider">
                 New Arrivals
               </span>
@@ -66,6 +74,7 @@ const RecentlyAdded = () => {
             className="group flex w-fit items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-green-400 hover:bg-green-50 hover:text-green-700"
           >
             View All Books
+
             <FaArrowRight className="transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
